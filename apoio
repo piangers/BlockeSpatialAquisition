@@ -1,0 +1,13 @@
+def variable(self,data):
+        layer = self.iface.activeLayer()
+        vlayer = data[u'vectorLayer']
+        workspaceName = data[U'workspaceName']
+        workspaceData = data[U'workspaceData']
+
+        core.QgsExpressionContextUtils.setLayerVariable( vlayer, u'area_trabalho_nome', workspaceName)
+        core.QgsExpressionContextUtils.setLayerVariable( vlayer, u'area_trabalho_poligono', workspaceData)
+        # Onde vlayer é o objeto da camada, u'area_trabalho_poligono' o nome da variável e workspaceData o valor da variável.
+
+
+        # Para recuperar o valor da variável de camada, você pode usar a seguinte linha
+        QgsExpressionContextUtils.layerScope(layer).variable('your_variable')
