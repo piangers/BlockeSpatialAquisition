@@ -1,13 +1,116 @@
-def variable(self,data):
-        layer = self.iface.activeLayer()
-        vlayer = data[u'vectorLayer']
-        workspaceName = data[U'workspaceName']
-        workspaceData = data[U'workspaceData']
-
-        core.QgsExpressionContextUtils.setLayerVariable( vlayer, u'area_trabalho_nome', workspaceName)
-        core.QgsExpressionContextUtils.setLayerVariable( vlayer, u'area_trabalho_poligono', workspaceData)
-        # Onde vlayer é o objeto da camada, u'area_trabalho_poligono' o nome da variável e workspaceData o valor da variável.
 
 
-        # Para recuperar o valor da variável de camada, você pode usar a seguinte linha
-        QgsExpressionContextUtils.layerScope(layer).variable('your_variable')
+'''
+
+def run(fid): # recebendo  id da funcao
+    
+    layer = iface.activeLayer()
+          
+    name = u'area_trabalho_poligono'
+    srid = QgsExpressionContextUtils.layerScope(layer).variable(name)
+    wkt = srid.replace('SRID=31982;','')
+    print wkt
+    
+    
+    mapcanvas = iface.mapCanvas()
+            
+    geom = QgsGeometry()
+    geom = QgsGeometry.fromWkt(wkt)
+    
+    print geom
+    print 'teste1'
+    
+    
+        
+    for feat in layer.getFeatures():
+        if feat.id() == fid:
+            feat = QgsGeometry()
+            feat.setGeometry(feat.geometry())
+            
+            
+            
+            print feat
+            print 'teste2'
+            print geom.intersects(feat.geometry())
+                
+        
+  
+    
+iface.activeLayer().featureAdded.connect(run)
+
+
+
+           SCRIPT PARA CONSOLE PHYTON
+
+def run(fid): # recebendo  id da funcao
+    
+    layer = iface.activeLayer()
+          
+    name = u'area_trabalho_poligono'
+    srid = QgsExpressionContextUtils.layerScope(layer).variable(name)
+    #print varSRID
+    rep = srid.replace('SRID=31982;','')
+    #print rep
+    repTwo = '"'+rep+'"'
+    #print repTwo
+    wkt = repTwo.replace('Polygon','POLYGON')
+    #print wkt
+    
+    mapcanvas = iface.mapCanvas()
+            
+    geom = QgsGeometry()
+    geom = QgsGeometry.fromWkt(wkt)
+    
+    feat = QgsFeature()
+    feat.setGeometry(geom)
+    print feat
+    print 'teste 1'
+    #print feat
+    
+    iterator = layer.getFeatures(QgsFeatureRequest().setFilterFid(fid))
+    print iterator
+    
+    for f in layer.getFeatures():
+        print fid
+        
+        if feat.geometry().intersect(f.geometry(iterator)):
+            print 'ok'
+        else:
+            print 'falhou'
+    
+
+iface.activeLayer().featureAdded.connect(run)
+
+
+
+            CODIGO PARA APOIO
+
+
+troca = varSRID.replace('SRID=31982;','')
+S
+layer = iface.activeLayer()
+varName = u'area_trabalho_poligono'
+varSRID = QgsExpressionContextUtils.layerScope(layer).variable(varName)
+
+#roca = varSRID.replace('SRID=31982;','')
+print troca
+
+print varSRID
+wkt = "POLYGON ((-347439.02574192953761667 9816849.70922503434121609, -341132.52618753269780427 9817506.63626194931566715, -339161.74507678369991481 9798849.90841352567076683, -339161.74507678369991481 9798849.90841352567076683, -347439.02574192953761667 9816849.70922503434121609))"
+temp = QgsVectorLayer("Polygon?crs=epsg:31982", "result", "memory")
+QgsMapLayerRegistry.instance().addMapLayer(temp)
+
+temp.startEditing()
+geom = QgsGeometry()
+geom = QgsGeometry.fromWkt(wkt)
+feat = QgsFeature()
+feat.setGeometry(geom)
+temp.dataProvider().addFeatures([feat])
+temp.commitChanges()
+print geom
+'''
+
+
+
+
+
