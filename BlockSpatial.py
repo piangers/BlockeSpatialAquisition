@@ -32,11 +32,13 @@ class BlockSpatial():
     def run(self,b):
         #sinal de troca da layer
         if b:
+            self.addSignal()
             self.iface.layerTreeView().currentLayerChanged.connect(self.addSignal)
+           
         else:
             self.disconnect()
-            self.action.toggled.disconnect(self.run)
-            return
+            #self.action.toggled.disconnect(self.run)
+            
     
 
     def addSignal(self):
@@ -44,7 +46,7 @@ class BlockSpatial():
             try:
                 self.layer.featureAdded.connect(self.block) # Sinal que chama a função e retorna o 'id'
             except:
-                pass
+                return
     
     
 
@@ -55,21 +57,16 @@ class BlockSpatial():
         self.iface.layerTreeView().currentLayerChanged.disconnect(self.addSignal)
         for i in self.iface.mapCanvas().layers():
               
-            try:
-                
-                
+            try: 
                 i.featureAdded.disconnect(self.block)    
             except:
                 pass
-            try:
-                self.iface.layerTreeView().currentLayerChanged.reset()
-            except:
-                pass 
+            
 
     def unload(self):
         pass
         
-
+#################################     FUNÇÃO PROVISORIO    ##########################
 
     def block(self, fid): # recebendo  id da funcao
         
@@ -89,19 +86,14 @@ class BlockSpatial():
                             QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
                             self.layer.deleteFeature(feat.id())                 
                             self.mapcanvas.refresh()
-                            return
+        
+        
                             
 
-
-
-
-
-
-
-
-
+#################################    FUNÇÃO A SER IMPLEMENTADA     ##########################
 
     # def block(self, fid): # recebendo  id da funcao
+
     #     if self.layer:
     #         name = u'area_trabalho_poligono'
     #         ewkt = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
