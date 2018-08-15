@@ -35,7 +35,8 @@ class BlockSpatial():
             self.iface.layerTreeView().currentLayerChanged.connect(self.addSignal)
         else:
             self.disconnect()
-    
+            self.action.toggled.disconnect(self.run)
+            return
     
 
     def addSignal(self):
@@ -44,27 +45,34 @@ class BlockSpatial():
                 self.layer.featureAdded.connect(self.block) # Sinal que chama a função e retorna o 'id'
             except:
                 pass
-
+    
+    
 
     def disconnect(self):
         #looping em todas as camadas disconectando o feature added
         #disconectar sinal de troca
-        self.iface.layerTreeView().currentLayerChanged.disconnect(self.addSignal) 
+        
+        self.iface.layerTreeView().currentLayerChanged.disconnect(self.addSignal)
         for i in self.iface.mapCanvas().layers():
-           
+              
             try:
-                i.featureAdded.disconnect(self.run)
+                
+                
+                i.featureAdded.disconnect(self.block)    
             except:
-                pass   
+                pass
+            try:
+                self.iface.layerTreeView().currentLayerChanged.reset()
+            except:
+                pass 
 
     def unload(self):
         pass
-
-
-
+        
 
 
     def block(self, fid): # recebendo  id da funcao
+        
         if self.layer:
             name = u'area_trabalho_poligono'
             ewkt = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
@@ -73,21 +81,26 @@ class BlockSpatial():
 
                 geom = QgsGeometry()
                 geom = QgsGeometry.fromWkt(wkt)
-        
-                request = QgsFeatureRequest().setFilterFid(fid)
-                feat = next(self.layer.getFeatures(request))
-                if not geom.intersects(feat.geometry()):
-                    QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
-                    self.layer.deleteFeature(fid)                 
-                    self.mapcanvas.refresh()
-   
-   
-   
-   
-   
-   
-   
-   
+
+                    
+                for feat in self.layer.getFeatures():
+                    if feat.id() == fid:
+                        if geom.intersects(feat.geometry()) == False:
+                            QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
+                            self.layer.deleteFeature(feat.id())                 
+                            self.mapcanvas.refresh()
+                            return
+                            
+
+
+
+
+
+
+
+
+
+
     # def block(self, fid): # recebendo  id da funcao
     #     if self.layer:
     #         name = u'area_trabalho_poligono'
@@ -98,31 +111,16 @@ class BlockSpatial():
     #             geom = QgsGeometry()
     #             geom = QgsGeometry.fromWkt(wkt)
         
-            
-    #         if not self.layer:
-    #             pass
-    #         else:
-    #             name = u'area_trabalho_poligono'
-    #             srid = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
-    #             if not srid:
-    #                 pass
-    #             else: 
-    #                 wkt = srid.replace('SRID=31982;','')
-                    
-
-                            
-    #                 geom = QgsGeometry()
-    #                 geom = QgsGeometry.fromWkt(wkt)
-                    
-    #                 for feat in self.layer.getFeatures():
-    #                     if feat.id() == fid:
-    #                         if geom.intersects(feat.geometry()) == False:
-    #                             QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
-    #                             self.layer.deleteFeature(feat.id())                 
-    #                             self.mapcanvas.refresh()
-                                
-  
-            
+    #             request = QgsFeatureRequest().setFilterFid(fid)
+    #             feat = next(self.layer.getFeatures(request))
+    #             if not geom.intersects(feat.geometry()):
+    #                 QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
+    #                 self.layer.deleteFeature(fid)                 
+    #                 self.mapcanvas.refresh()
+        
+           
     
+                
+        
 
 
