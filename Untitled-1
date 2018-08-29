@@ -1,0 +1,14 @@
+
+
+1 ) A partir de uma nova variável onde estará especificadas as geometrias que não poderão ser alteradas: 
+    
+    - Escutar o sinal no momento da alteração que provavelmente é
+    "self.layer.geometryChanged().connect(self.testChanged)". 
+    Este sinal retorna "fid" e "geom".
+    
+    - Rodar a função Def testChanged(self,fid,geom) para que quando a edição estiver ligada e 
+    encontrado alguma alteração de geometria da variável,
+    mostra mensagem e retrocede as alterações para a forma original, provavelmente com "rollBack()":
+    
+        QMessageBox.information (self.iface.mainWindow() , u'ATENÇÃO!', u'A Geometria não pode ser alterada.')
+        feat.rollBack()

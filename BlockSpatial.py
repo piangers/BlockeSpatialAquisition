@@ -28,6 +28,7 @@ class BlockSpatial():
         #associar botão a função run (toogle)
         
         self.action.toggled.connect(self.run)
+        self.layer.geometryChanged().connect(self.testChanged) ###################
 
     def run(self,b):
         #sinal de troca da layer
@@ -88,7 +89,18 @@ class BlockSpatial():
                             self.mapcanvas.refresh()
         
         
-                            
+    def testChanged(self,fid,geom):
+
+        if self.layer: 
+            name = u'geometria_editavel'
+            var = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
+            for feat in self.layer.getFeatures():
+                if feat.geometry == geom:
+                    QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u'A Geometria não pode ser alterada.')
+                    self.layer.rollBack()
+
+
+
 
 #################################    FUNÇÃO A SER IMPLEMENTADA     ##########################
 
