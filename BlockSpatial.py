@@ -25,6 +25,8 @@ class BlockSpatial():
         self.action.setCheckable(True)
         self.toolbar.addAction(self.action)
         self.mapcanvas = self.iface.mapCanvas()
+
+        self.geometryChange = False
         #associar botão a função run (toogle)
         
         self.action.toggled.connect(self.run)
@@ -34,25 +36,18 @@ class BlockSpatial():
         if b:
             self.addSignal()
             self.iface.layerTreeView().currentLayerChanged.connect(self.addSignal)
-            self.populateGeometryList()
            
         else:
             self.disconnect()
             #self.action.toggled.disconnect(self.run)
             
-    
-    def populateGeometryList(self):
-        self.geometryList = {}
-
-        for feat in self.layer.getFeatures():
-            self.geometryList[feat.id()] = feat.geometry()
-
     def addSignal(self):
             self.layer = self.mapcanvas.currentLayer()
             try:
                 self.ligado = True
                 self.layer.featureAdded.connect(self.block) # Sinal que chama a função e retorna o 'id'
                 self.layer.geometryChanged.connect(self.testChanged) ###################
+                self.layer.layerModified.connect(self.checkGeometryChanged)
             except:
                 return
     
@@ -68,6 +63,7 @@ class BlockSpatial():
             try: 
                 i.featureAdded.disconnect(self.block)
                 i.geometryChanged.disconnect(self.testChanged)
+                i.layerModified.connect(self.checkGeometryChanged)
             except:
                 pass
             
@@ -91,42 +87,30 @@ class BlockSpatial():
                     
                 for feat in self.layer.getFeatures():
                     if feat.id() == fid:
-                        if geom.intersects(feat.geometry()) == False:
+                         if geom.intersects(feat.geometry()) == False:
                             QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
                             self.layer.deleteFeature(feat.id())                 
                             self.mapcanvas.refresh()
         
         
     def testChanged(self,fid,geom):
-      
         
         if self.layer and self.ligado:
-            print 'Uhu'
             name = u'geometria_editavel'
             var = QgsExpressionContextUtils().layerScope(self.layer).variable(name)
             
-            editFeat = ''
-
-            for feat in self.layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)):
-                editFeat = feat                
-            try:
-                print fid, self.geometryList[long(fid)], editFeat.geometry()
-            except:
-                print 'Capotou aqui'
-
-            if var == 'True':
-                # for feat in self.layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)):
+            
+            if var == 'False' and self.geometryChange == False:
                 QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u'A Geometria não pode ser alterada.')
                 
-                self.ligado = False
-                editFeat.setGeometry( self.geometryList[long(fid)] )
-                self.ligado = True
+                self.geometryChange = True
 
-            else:
-                self.geometryList[long(fid)] = geom
-
-            self.mapcanvas.refresh() # atualiza as alterações no canvas.
-
+    def checkGeometryChanged(self):
+        if self.geometryChange == True:
+            self.ligado = False
+            self.geometryChange = False
+            self.layer.undoStack().undo()            
+            self.ligado = True
 
 
 #################################    FUNÇÃO A SER IMPLEMENTADA     ##########################
