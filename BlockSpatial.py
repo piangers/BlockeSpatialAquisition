@@ -39,15 +39,15 @@ class BlockSpatial():
            
         else:
             self.disconnect()
-            #self.action.toggled.disconnect(self.run)
+           
             
     def addSignal(self):
             self.layer = self.mapcanvas.currentLayer()
             try:
                 self.ligado = True
                 self.layer.featureAdded.connect(self.block) # Sinal que chama a função e retorna o 'id'
-                self.layer.geometryChanged.connect(self.testChanged) ###################
-                self.layer.layerModified.connect(self.checkGeometryChanged)
+                self.layer.geometryChanged.connect(self.testChanged) # emitido quando edição de geometria são feitas na camada.
+                self.layer.layerModified.connect(self.checkGeometryChanged) # emitido quando modificações são feitas na camada.
             except:
                 return
     
@@ -109,7 +109,7 @@ class BlockSpatial():
         if self.geometryChange == True:
             self.ligado = False
             self.geometryChange = False
-            self.layer.undoStack().undo()            
+            self.layer.undoStack().undo() # Retorna para a           
             self.ligado = True
 
 
