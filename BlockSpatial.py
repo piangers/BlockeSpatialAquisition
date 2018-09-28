@@ -23,6 +23,7 @@ class BlockSpatial():
         self.action.setStatusTip(None)
         self.action.setWhatsThis(None)
         self.action.setCheckable(True)
+        
         self.toolbar.addAction(self.action)
         self.mapcanvas = self.iface.mapCanvas()
 
@@ -39,19 +40,20 @@ class BlockSpatial():
            
         else:
             self.disconnect()
-           
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
             
     def addSignal(self):
             self.layer = self.mapcanvas.currentLayer()
             try:
                 self.ligado = True
-                self.layer.featureAdded.connect(self.block) # Sinal que chama a função e retorna o 'id'
+                self.layer.featureAdded.connect(self.blockGeom) # Sinal que chama a função e retorna o 'id'
                 self.layer.geometryChanged.connect(self.testChanged) # emitido quando edição de geometria são feitas na camada.
-                self.layer.layerModified.connect(self.checkGeometryChanged) # emitido quando modificações são feitas na camada.
+                self.layer.layerModified.connect(self.checkGeometryChanged)
+
             except:
-                return
+                return 
     
-    
+
 
     def disconnect(self):
         #looping em todas as camadas disconectando o feature added
@@ -61,12 +63,12 @@ class BlockSpatial():
         for i in self.iface.mapCanvas().layers():
               
             try: 
-                i.featureAdded.disconnect(self.block)
+                #i.featureAdded.disconnect(self.block)
                 i.geometryChanged.disconnect(self.testChanged)
-                i.layerModified.connect(self.checkGeometryChanged)
+                i.layerModified.disconnect(self.checkGeometryChanged)
+                i.featureAdded.disconnect(self.blockGeom)
             except:
-                pass
-            
+                pass            
 
     def unload(self):
         pass
@@ -80,12 +82,11 @@ class BlockSpatial():
             ewkt = QgsExpressionContextUtils().layerScope(self.layer).variable(name)
             if ewkt:
                 wkt = ewkt.split(';')[1]
-
                 geom = QgsGeometry()
                 geom = QgsGeometry.fromWkt(wkt)
-
-                    
-                for feat in self.layer.getFeatures():
+                
+                
+                for feat in self.layer.getFeatures(): 
                     if feat.id() == fid:
                          if geom.intersects(feat.geometry()) == False:
                             QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
@@ -103,7 +104,7 @@ class BlockSpatial():
             if var == 'False' and self.geometryChange == False:
                 QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u'A Geometria não pode ser alterada.')
                 
-                self.geometryChange = True
+                self.geometryChange = True 
 
     def checkGeometryChanged(self):
         if self.geometryChange == True:
@@ -115,27 +116,23 @@ class BlockSpatial():
 
 #################################    FUNÇÃO A SER IMPLEMENTADA     ##########################
 
-    # def block(self, fid): # recebendo  id da funcao
+    def blockGeom(self, fid): # recebendo  id da funcao
 
-    #     if self.layer:
-    #         name = u'area_trabalho_poligono'
-    #         ewkt = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
-    #         if ewkt:
-    #             wkt = ewkt.split(';')[1]
+        if self.layer:
+            name = u'area_trabalho_poligono'
+            ewkt = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
+            if ewkt:
+                wkt = ewkt.split(';')[1]
 
-    #             geom = QgsGeometry()
-    #             geom = QgsGeometry.fromWkt(wkt)
+                geom = QgsGeometry()
+                geom = QgsGeometry.fromWkt(wkt)
         
-    #             request = QgsFeatureRequest().setFilterFid(fid)
-    #             feat = next(self.layer.getFeatures(request))
-    #             if not geom.intersects(feat.geometry()):
-    #                 QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
-    #                 self.layer.deleteFeature(fid)                 
-    #                 self.mapcanvas.refresh()
+                request = QgsFeatureRequest().setFilterFid(fid)
+                feat = next(self.layer.getFeatures(request)) # aqui rever.. 
+                if not geom.intersects(feat.geometry()):
+                    if feat.id() == fid:
+                        QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
+                        self.layer.deleteFeature(fid)                 
+                        self.mapcanvas.refresh()
         
            
-    
-                
-        
-
-
