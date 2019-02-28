@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import QColor, QInputDialog, QLineEdit, QAction, QIcon, QMessageBox
-from qgis.core import QGis, QgsMapLayerRegistry, QgsDistanceArea, QgsFeature, QgsPoint, QgsGeometry, QgsField, QgsVectorLayer, QgsExpressionContextUtils, QgsExpressionContextScope, QgsFeatureRequest
-from qgis.gui import QgsMapToolEmitPoint, QgsRubberBand, QgsMapTool, QgsMessageBar
-import resources_rc
+import os
+from PyQt5.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+from qgis.gui import *
+from qgis.core import *
+from qgis.PyQt.QtWidgets import *
+from BlockSpatial import resources_rc
 
 class BlockSpatial():
     
@@ -114,7 +117,7 @@ class BlockSpatial():
             self.ligado = True
 
 
-#################################    FUNÇÃO A SER IMPLEMENTADA     ##########################
+#################################    FUNÇÃO A SER IMPLEMENTADA    ##########################
 
     def blockGeom(self, fid): # recebendo  id da funcao
 
@@ -123,14 +126,15 @@ class BlockSpatial():
             ewkt = QgsExpressionContextUtils.layerScope(self.layer).variable(name)
             if ewkt:
                 wkt = ewkt.split(';')[1]
-
                 geom = QgsGeometry()
                 geom = QgsGeometry.fromWkt(wkt)
         
                 request = QgsFeatureRequest().setFilterFid(fid)
-                feat = next(self.layer.getFeatures(request)) # aqui rever.. 
+                feat = next(self.layer.getFeatures(request)) 
                 if not geom.intersects(feat.geometry()):
                     if feat.id() == fid:
+
+                        
                         QMessageBox.information (self.iface.mainWindow() ,  u'ATENÇÃO!' ,  u"A aquisicão esta fora do limite de trabalho na camada " + self.layer.name())
                         self.layer.deleteFeature(fid)                 
                         self.mapcanvas.refresh()
